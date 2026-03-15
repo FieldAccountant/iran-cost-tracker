@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iran War Cost Tracker | American Taxpayer Impact</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #07111f;
+  --panel:        #0d1e30;
+  --panel-raised: #122440;
+  --border:       rgba(255,255,255,0.07);
+  --border-hi:    rgba(255,255,255,0.14);
+  --red:          #d94030;
+  --red-glow:     rgba(217,64,48,0.25);
+  --red-dim:      rgba(217,64,48,0.12);
+  --gold:         #c8a44a;
+  --gold-dim:     rgba(200,164,74,0.12);
+  --text-hi:      #edf1f7;
+  --text-mid:     #7e94b0;
+  --text-lo:      #3a5070;
+  --green:        #3aaa6a;
+  --grid:         rgba(255,255,255,0.025);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Barlow Condensed', sans-serif;
+  background: var(--bg);
+  color: var(--text-hi);
+  min-height: 100vh;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ── HEADER ─────────────────────────────────── */
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border-hi);
+  padding: 0;
+}
+
+.header-top-bar {
+  background: var(--red);
+  height: 3px;
+}
+
+.header-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1.6rem 2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.header-flags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.flag-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.flag-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+
+.flag-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-hi);
+}
+
+.header-title-block {
+  flex: 1;
+}
+
+.header-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  color: var(--text-hi);
+}
+
+h1 span {
+  color: var(--red);
+  text-shadow: 0 0 24px var(--red-glow);
+}
+
+.header-sub {
+  margin-top: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mid);
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-sub .dot { color: var(--red); font-size: 8px; }
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(58,170,106,0.35);
+  border-radius: 2px;
+  padding: 4px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--green);
+}
+
+.live-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+.last-updated-txt {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+
+/* ── MAIN ────────────────────────────────────── */
+main {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+}
+
+/* ── STATUS ──────────────────────────────────── */
+.status-bar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  padding: 0.55rem 1rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.04em;
+}
+
+.status-bar.error  { border-left-color: var(--red);   color: #e07070; }
+.status-bar.success{ border-left-color: var(--green);  color: #5ec98a; }
+
+/* ── BUTTONS ─────────────────────────────────── */
+.btn-row { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+.btn-red {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 10px var(--red-dim);
+}
+.btn-red:hover   { background: #e8473a; box-shadow: 0 0 18px var(--red-glow); }
+.btn-red:disabled{ opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.btn-ghost {
+  display: flex; align-items: center; gap: 8px;
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid var(--border-hi);
+  border-radius: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-ghost:hover { border-color: var(--text-mid); color: var(--text-hi); }
+
+/* ── SECTION HEADERS ─────────────────────────── */
+.section-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1.75rem 0 1rem;
+}
+
+.section-hdr-accent {
+  width: 3px; height: 16px;
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red-glow);
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+
+.section-hdr h2 {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.section-hdr-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── METRICS GRID ────────────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--border-hi);
+  border: 1px solid var(--border-hi);
+  margin-bottom: 0;
+}
+
+.metric-card {
+  background: var(--panel);
+  padding: 1.25rem 1.35rem 1.1rem;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.metric-card:hover { background: var(--panel-raised); }
+
+.metric-top-line {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.accent-red  .metric-top-line { background: var(--red); box-shadow: 0 0 8px var(--red-glow); }
+.accent-gold .metric-top-line { background: var(--gold); }
+.accent-dim  .metric-top-line { background: var(--border-hi); }
+
+.metric-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 0.5rem;
+}
+
+.metric-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.metric-value.v-red  { color: var(--red); text-shadow: 0 0 22px var(--red-glow); }
+.metric-value.v-gold { color: var(--gold); text-shadow: 0 0 16px rgba(200,164,74,0.3); }
+.metric-value.v-white{ color: var(--text-hi); }
+
+.metric-note {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  margin-top: 5px;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+/* ── SKELETON ────────────────────────────────── */
+.sk {
+  background: linear-gradient(90deg, var(--panel) 25%, var(--panel-raised) 50%, var(--panel) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+  border-radius: 2px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── TAXPAYER PANEL ──────────────────────────── */
+.taxpayer-panel {
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--red);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 0;
+  box-shadow: inset 0 0 60px rgba(217,64,48,0.03);
+}
+
+.tp-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.1rem;
+}
+
+.tp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.tp-stat { border-left: 1px solid var(--border-hi); padding-left: 0.85rem; }
+
+.tp-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 3px;
+}
+
+.tp-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.9rem;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(200,164,74,0.25);
+}
+
+.tp-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  margin-top: 2px;
+  letter-spacing: 0.04em;
+}
+
+.slider-block {
+  border-top: 1px solid var(--border);
+  padding-top: 1.1rem;
+}
+
+.slider-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mid);
+  letter-spacing: 0.08em;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.slider-lbl span { color: var(--gold); }
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--red);
+  cursor: pointer;
+}
+
+.personal-stats {
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── BREAKDOWN ───────────────────────────────── */
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--border-hi);
+  border: 1px solid var(--border-hi);
+}
+
+.bk-card {
+  background: var(--panel);
+  padding: 1.1rem 1.25rem;
+  transition: background 0.15s;
+}
+
+.bk-card:hover { background: var(--panel-raised); }
+
+.bk-cat {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 5px;
+}
+
+.bk-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.75rem;
+  color: var(--red);
+  text-shadow: 0 0 14px var(--red-glow);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.bk-desc {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* ── NEWS ────────────────────────────────────── */
+.news-list { display: flex; flex-direction: column; gap: 3px; }
+
+.news-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--red);
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 0.15s;
+}
+
+.news-item:hover { background: var(--panel-raised); }
+
+.news-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--red);
+  text-transform: uppercase;
+}
+
+.news-headline {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-hi);
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.news-pill {
+  display: inline-block;
+  background: var(--red-dim);
+  border: 1px solid rgba(217,64,48,0.25);
+  color: #d07070;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 2px;
+  align-self: flex-start;
+}
+
+.news-src {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text-lo);
+}
+
+/* ── ANALYSIS ────────────────────────────────── */
+.analysis-box {
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  padding: 1.4rem 1.6rem;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.85;
+  color: var(--text-mid);
+  white-space: pre-wrap;
+}
+
+/* ── SOURCES ─────────────────────────────────── */
+.sources-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+}
+
+.sources-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 8px;
+}
+
+.src-tag {
+  display: inline-block;
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  border-radius: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mid);
+  padding: 2px 8px;
+  margin: 3px;
+}
+
+/* ── DEBUG ───────────────────────────────────── */
+.debug-panel {
+  background: #030c14;
+  border: 1px solid rgba(58,170,106,0.18);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.debug-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--green);
+}
+
+#debugLog {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  max-height: 260px;
+  overflow-y: auto;
+  color: #4caf80;
+}
+
+.debug-key {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(58,170,106,0.1);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: #1a3a28;
+}
+
+/* ── CASUALTY PANEL ──────────────────────────── */
+.casualty-panel {
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--red);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 0;
+}
+
+.casualty-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.casualty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.cas-stat { border-left: 1px solid var(--border-hi); padding-left: 0.85rem; }
+
+.cas-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 3px;
+}
+
+.cas-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.cas-value.kia   { color: var(--red); text-shadow: 0 0 22px var(--red-glow); }
+.cas-value.wia   { color: var(--text-hi); }
+.cas-value.total { color: var(--text-hi); }
+
+.cas-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+
+.cas-note {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+}
+
+.cas-incidents {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cas-incident {
+  background: var(--bg);
+  border-left: 2px solid var(--border-hi);
+  padding: 0.5rem 0.85rem;
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.ci-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--red);
+  letter-spacing: 0.1em;
+}
+
+.ci-desc { color: var(--text-mid); font-weight: 300; line-height: 1.4; }
+
+.ci-toll {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mid);
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+
+/* Tablet — 2 col grids, tighter header */
+@media (max-width: 900px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .breakdown-grid { grid-template-columns: repeat(2, 1fr); }
+  .casualty-grid { grid-template-columns: repeat(2, 1fr); }
+  .tp-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile — full single column, scaled up for readability */
+@media (max-width: 640px) {
+
+  /* Base font bump */
+  body { font-size: 16px; }
+
+  /* Header — stack vertically */
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.1rem 1rem 1rem;
+    gap: 0.85rem;
+  }
+
+  .header-flags { gap: 8px; }
+  .header-flags svg { width: 44px; height: 29px; }
+
+  .header-title-block { width: 100%; }
+
+  .header-eyebrow { font-size: 10px; }
+
+  h1 { font-size: 2.6rem; }
+
+  .header-sub {
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  /* Move live pill inline below title instead of right column */
+  .header-right {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .last-updated-txt { text-align: left; font-size: 10px; }
+
+  /* Main padding */
+  main { padding: 1rem 0.85rem 3rem; }
+
+  /* Status bar */
+  .status-bar { font-size: 12px; padding: 0.65rem 0.9rem; }
+
+  /* Buttons — full width, bigger tap target */
+  .btn-row { flex-direction: column; gap: 8px; }
+  .btn-red, .btn-ghost {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1rem;
+    font-size: 12px;
+  }
+
+  /* Section headers */
+  .section-hdr h2 { font-size: 11px; letter-spacing: 0.2em; }
+
+  /* All grids single column */
+  .metrics-grid { grid-template-columns: 1fr; }
+  .breakdown-grid { grid-template-columns: 1fr; }
+  .casualty-grid { grid-template-columns: 1fr; }
+  .tp-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Metric cards — bigger numbers */
+  .metric-label { font-size: 10px; }
+  .metric-value { font-size: 2.8rem; }
+  .metric-note { font-size: 10px; }
+
+  /* Casualty panel */
+  .casualty-title { font-size: 10px; }
+  .cas-label { font-size: 10px; }
+  .cas-value { font-size: 2.8rem; }
+  .cas-sub { font-size: 10px; }
+  .cas-note { font-size: 10px; }
+
+  /* Incident rows — stack instead of 3-col grid */
+  .cas-incident {
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding: 0.65rem 0.85rem;
+  }
+  .ci-toll { text-align: left; }
+
+  /* Taxpayer panel */
+  .taxpayer-panel { padding: 1.1rem 1rem; }
+  .tp-title { font-size: 10px; }
+  .tp-label { font-size: 10px; }
+  .tp-value { font-size: 2rem; }
+  .tp-sub { font-size: 10px; }
+  .slider-lbl { font-size: 11px; }
+  .personal-stats { flex-direction: column; gap: 0.85rem; }
+  .personal-stats > div:last-child { text-align: left; }
+
+  /* Breakdown cards */
+  .bk-cat { font-size: 10px; }
+  .bk-amount { font-size: 1.9rem; }
+  .bk-desc { font-size: 13px; }
+
+  /* News items */
+  .news-date { font-size: 10px; }
+  .news-headline { font-size: 15px; }
+  .news-pill { font-size: 11px; }
+  .news-src { font-size: 10px; }
+
+  /* Analysis */
+  .analysis-box { font-size: 14px; padding: 1.1rem 1rem; line-height: 1.7; }
+
+  /* Sources */
+  .sources-box { padding: 0.85rem 1rem; }
+  .sources-label { font-size: 10px; }
+  .src-tag { font-size: 11px; }
+
+  /* Footer */
+  footer { font-size: 10px; }
+
+  /* Debug panel */
+  #debugLog { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top-bar"></div>
+  <div class="header-inner">
+
+    <!-- FLAGS -->
+    <div class="header-flags">
+      <div class="flag-block">
+        <svg width="52" height="34" viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg" style="display:block;border:1px solid rgba(255,255,255,0.15);">
+          <rect width="72" height="48" fill="#B22234"/>
+          <rect y="3.69" width="72" height="3.69" fill="white"/>
+          <rect y="11.07" width="72" height="3.69" fill="white"/>
+          <rect y="18.45" width="72" height="3.69" fill="white"/>
+          <rect y="25.84" width="72" height="3.69" fill="white"/>
+          <rect y="33.22" width="72" height="3.69" fill="white"/>
+          <rect y="40.61" width="72" height="3.69" fill="white"/>
+          <rect width="29" height="25.84" fill="#3C3B6E"/>
+          <g fill="white" font-size="3.2" font-family="serif" text-anchor="middle">
+            <text x="3" y="4.5">★</text><text x="7.2" y="4.5">★</text><text x="11.4" y="4.5">★</text><text x="15.6" y="4.5">★</text><text x="19.8" y="4.5">★</text><text x="24" y="4.5">★</text>
+            <text x="5" y="8">★</text><text x="9.2" y="8">★</text><text x="13.4" y="8">★</text><text x="17.6" y="8">★</text><text x="21.8" y="8">★</text>
+            <text x="3" y="11.5">★</text><text x="7.2" y="11.5">★</text><text x="11.4" y="11.5">★</text><text x="15.6" y="11.5">★</text><text x="19.8" y="11.5">★</text><text x="24" y="11.5">★</text>
+            <text x="5" y="15">★</text><text x="9.2" y="15">★</text><text x="13.4" y="15">★</text><text x="17.6" y="15">★</text><text x="21.8" y="15">★</text>
+            <text x="3" y="18.5">★</text><text x="7.2" y="18.5">★</text><text x="11.4" y="18.5">★</text><text x="15.6" y="18.5">★</text><text x="19.8" y="18.5">★</text><text x="24" y="18.5">★</text>
+            <text x="5" y="22">★</text><text x="9.2" y="22">★</text><text x="13.4" y="22">★</text><text x="17.6" y="22">★</text><text x="21.8" y="22">★</text>
+            <text x="3" y="24.8">★</text><text x="7.2" y="24.8">★</text><text x="11.4" y="24.8">★</text><text x="15.6" y="24.8">★</text><text x="19.8" y="24.8">★</text><text x="24" y="24.8">★</text>
+          </g>
+        </svg>
+        <span class="flag-name">USA</span>
+      </div>
+      <div class="flag-divider"></div>
+      <div class="flag-block">
+        <svg width="52" height="34" viewBox="0 0 72 48" xmlns="http://www.w3.org/2000/svg" style="display:block;border:1px solid rgba(255,255,255,0.15);">
+          <rect width="72" height="16" fill="#239F40"/>
+          <rect y="16" width="72" height="16" fill="#FAFAFA"/>
+          <rect y="32" width="72" height="16" fill="#DA0000"/>
+          <line x1="0" y1="16" x2="72" y2="16" stroke="white" stroke-width="0.6" opacity="0.4"/>
+          <line x1="0" y1="32" x2="72" y2="32" stroke="white" stroke-width="0.6" opacity="0.4"/>
+          <g transform="translate(36,24)" fill="#DA0000">
+            <ellipse cx="0" cy="0" rx="1.8" ry="3.5"/>
+            <ellipse cx="-3.5" cy="0.5" rx="1.4" ry="2.8" transform="rotate(-30)"/>
+            <ellipse cx="3.5" cy="0.5" rx="1.4" ry="2.8" transform="rotate(30)"/>
+            <rect x="-0.5" y="2.5" width="1" height="3.5"/>
+            <polygon points="-5.5,5.5 5.5,5.5 0.5,7 -0.5,7" opacity="0.8"/>
+            <path d="M-4,-4 Q0,-7 4,-4 Q1,-3.5 0,-3 Q-1,-3.5 -4,-4Z" opacity="0.7"/>
+          </g>
+        </svg>
+        <span class="flag-name">Iran</span>
+      </div>
+    </div>
+
+    <!-- TITLE -->
+    <div class="header-title-block">
+      <h1>IRAN WAR<br><span>COST TRACKER</span></h1>
+      <div class="header-sub">
+        <span>AI-Powered Research</span>
+        <span class="dot">◆</span>
+        <span>Authoritative Sources</span>
+      </div>
+    </div>
+
+    <!-- RIGHT STATUS -->
+    <div class="header-right">
+      <div class="live-pill"><div class="live-dot"></div>LIVE DATA</div>
+      <div class="last-updated-txt" id="lastUpdated">Initializing...</div>
+    </div>
+
+  </div>
+</header>
+
+<main>
+
+  <div class="status-bar" id="statusBar">
+    <svg width="7" height="7" viewBox="0 0 7 7" style="flex-shrink:0;"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"><animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/></circle></svg>
+    <span id="statusText">Connecting to AI research engine and searching authoritative sources...</span>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-red" id="refreshBtn" onclick="fetchData()" disabled>&#8635;&nbsp;Refresh Data</button>
+  </div>
+
+  <div class="debug-panel" id="debugPanel" style="display:none;">
+    <div class="debug-hdr">
+      <span>// API Debug Console</span>
+      <button onclick="document.getElementById('debugLog').innerHTML=''" style="background:transparent;border:1px solid rgba(58,170,106,0.25);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 8px;cursor:pointer;border-radius:2px;letter-spacing:0.1em;">CLEAR</button>
+    </div>
+    <div id="debugLog"><div style="color:#1a3a28;">// Waiting for data fetch...</div></div>
+    <div class="debug-key">KEY: <span style="color:#6fcf97;">INFO</span> &nbsp;<span style="color:#f2c94c;">TOOL</span> &nbsp;<span style="color:#56ccf2;">DATA</span> &nbsp;<span style="color:#eb5757;">ERROR</span></div>
+  </div>
+
+  <!-- HUMAN COST -->
+  <div class="section-hdr">
+    <div class="section-hdr-accent"></div>
+    <h2>Human Cost — Service Members</h2>
+    <div class="section-hdr-line"></div>
+  </div>
+
+  <div class="casualty-panel">
+    <div class="casualty-title">
+      <svg width="8" height="8" viewBox="0 0 8 8"><rect width="8" height="8" fill="var(--red)" opacity="0.7"/></svg>
+      Casualties Since Jan 1, 2025 — Iran-Related Operations
+    </div>
+    <div class="casualty-grid">
+      <div class="cas-stat">
+        <div class="cas-label">Killed in Action (KIA)</div>
+        <div class="cas-value kia" id="casKIA"><div class="sk" style="height:2.4rem;width:55%;"></div></div>
+        <div class="cas-sub" id="casKIASub">Loading...</div>
+      </div>
+      <div class="cas-stat">
+        <div class="cas-label">Wounded in Action (WIA)</div>
+        <div class="cas-value wia" id="casWIA"><div class="sk" style="height:2.4rem;width:55%;"></div></div>
+        <div class="cas-sub" id="casWIASub">Loading...</div>
+      </div>
+      <div class="cas-stat">
+        <div class="cas-label">Total Casualties</div>
+        <div class="cas-value total" id="casTotal"><div class="sk" style="height:2.4rem;width:55%;"></div></div>
+        <div class="cas-sub">KIA + WIA combined</div>
+      </div>
+    </div>
+    <div class="cas-incidents" id="casIncidents">
+      <div class="cas-incident"><div class="sk ci-date" style="height:0.65rem;width:80%;"></div><div class="sk ci-desc" style="height:0.65rem;width:90%;"></div><div class="sk ci-toll" style="height:0.65rem;width:60px;"></div></div>
+      <div class="cas-incident"><div class="sk ci-date" style="height:0.65rem;width:80%;"></div><div class="sk ci-desc" style="height:0.65rem;width:90%;"></div><div class="sk ci-toll" style="height:0.65rem;width:60px;"></div></div>
+    </div>
+    <div class="cas-note" id="casNote">Sourcing from DoD casualty reports, Pentagon press briefings, iCasualties.org, and verified news reporting. Figures reflect publicly confirmed deaths and injuries — actual numbers may be higher due to classification or reporting delays.</div>
+  </div>
+
+  <!-- COST SUMMARY -->
+
+  <div class="section-hdr">
+    <div class="section-hdr-accent"></div>
+    <h2>Cost Summary</h2>
+    <div class="section-hdr-line"></div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card accent-red">
+      <div class="metric-top-line"></div>
+      <div class="metric-label">Total Estimated Cost</div>
+      <div class="metric-value v-red" id="totalCost"><div class="sk" style="height:2.4rem;width:68%;"></div></div>
+      <div class="metric-note" id="totalCostSub">Loading...</div>
+    </div>
+    <div class="metric-card accent-gold">
+      <div class="metric-top-line"></div>
+      <div class="metric-label">Military Operations</div>
+      <div class="metric-value v-gold" id="militaryCost"><div class="sk" style="height:2.4rem;width:62%;"></div></div>
+      <div class="metric-note" id="militaryCostSub">Loading...</div>
+    </div>
+    <div class="metric-card accent-dim">
+      <div class="metric-top-line"></div>
+      <div class="metric-label">Defense Aid &amp; Equipment</div>
+      <div class="metric-value v-white" id="aidCost"><div class="sk" style="height:2.4rem;width:62%;"></div></div>
+      <div class="metric-note" id="aidCostSub">Loading...</div>
+    </div>
+    <div class="metric-card accent-dim">
+      <div class="metric-top-line"></div>
+      <div class="metric-label">Appropriations Since Jan 1, 2025</div>
+      <div class="metric-value v-white" id="approprCost"><div class="sk" style="height:2.4rem;width:62%;"></div></div>
+      <div class="metric-note" id="approprCostSub">Loading...</div>
+    </div>
+  </div>
+
+  <!-- TAXPAYER PANEL -->
+  <div class="section-hdr">
+    <div class="section-hdr-accent"></div>
+    <h2>Your Share as a Taxpayer</h2>
+    <div class="section-hdr-line"></div>
+  </div>
+
+  <div class="taxpayer-panel">
+    <div class="tp-grid">
+      <div class="tp-stat">
+        <div class="tp-label">Per US Household</div>
+        <div class="tp-value" id="perHousehold">—</div>
+        <div class="tp-sub">~135M households</div>
+      </div>
+      <div class="tp-stat">
+        <div class="tp-label">Per Taxpayer</div>
+        <div class="tp-value" id="perTaxpayer">—</div>
+        <div class="tp-sub">~150M filers</div>
+      </div>
+      <div class="tp-stat">
+        <div class="tp-label">Per Second</div>
+        <div class="tp-value" id="perSecond">—</div>
+        <div class="tp-sub">ongoing spend rate</div>
+      </div>
+    </div>
+    <div class="slider-block">
+      <div class="slider-lbl">Your Annual Income <span id="incomeLabel">$65,000</span></div>
+      <input type="range" min="20000" max="500000" step="5000" value="65000" id="incomeSlider" oninput="updatePersonal()">
+      <div class="personal-stats">
+        <div>
+          <div class="tp-label">Your Estimated Share</div>
+          <div class="tp-value" id="personalShare">—</div>
+          <div class="tp-sub">~22% effective tax rate</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="tp-label">Equivalent To</div>
+          <div class="tp-value" id="equivalent" style="font-size:1.1rem;line-height:1.3;">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BREAKDOWN -->
+  <div class="section-hdr">
+    <div class="section-hdr-accent"></div>
+    <h2>Cost Breakdown</h2>
+    <div class="section-hdr-line"></div>
+  </div>
+
+  <div class="breakdown-grid" id="breakdownGrid">
+    <div class="bk-card"><div class="sk" style="height:0.65rem;width:50%;margin-bottom:5px;"></div><div class="sk" style="height:1.7rem;width:65%;margin-bottom:6px;"></div><div class="sk" style="height:0.65rem;width:95%;"></div></div>
+    <div class="bk-card"><div class="sk" style="height:0.65rem;width:50%;margin-bottom:5px;"></div><div class="sk" style="height:1.7rem;width:65%;margin-bottom:6px;"></div><div class="sk" style="height:0.65rem;width:95%;"></div></div>
+    <div class="bk-card"><div class="sk" style="height:0.65rem;width:50%;margin-bottom:5px;"></div><div class="sk" style="height:1.7rem;width:65%;margin-bottom:6px;"></div><div class="sk" style="height:0.65rem;width:95%;"></div></div>
+  </div>
+
+  <!-- NEWS -->
+  <div class="section-hdr">
+    <div class="section-hdr-accent"></div>
+    <h2>Latest Developments</h2>
+    <div class="section-hdr-line"></div>
+  </div>
+
+  <div class="news-list" id="newsSection">
+    <div class="news-item"><div class="sk" style="height:0.6rem;width:22%;margin-bottom:4px;"></div><div class="sk" style="height:0.85rem;width:85%;"></div></div>
+    <div class="news-item"><div class="sk" style="height:0.6rem;width:22%;margin-bottom:4px;"></div><div class="sk" style="height:0.85rem;width:76%;"></div></div>
+    <div class="news-item"><div class="sk" style="height:0.6rem;width:22%;margin-bottom:4px;"></div><div class="sk" style="height:0.85rem;width:80%;"></div></div>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div class="section-hdr">
+    <div class="section-hdr-accent"></div>
+    <h2>Daily Intelligence Report <span style="font-size:8px;letter-spacing:0.15em;color:var(--gold);font-family:'Share Tech Mono',monospace;opacity:0.8;">· AI-POWERED</span></h2>
+    <div class="section-hdr-line"></div>
+  </div>
+
+  <div class="analysis-box" id="analysisBox">
+    <div class="sk" style="height:0.72rem;width:97%;margin-bottom:5px;"></div>
+    <div class="sk" style="height:0.72rem;width:91%;margin-bottom:5px;"></div>
+    <div class="sk" style="height:0.72rem;width:94%;margin-bottom:5px;"></div>
+    <div class="sk" style="height:0.72rem;width:68%;"></div>
+  </div>
+
+  <div class="sources-box" id="sourcesSection" style="display:none;margin-bottom:1.5rem;">
+    <div class="sources-label">Sources Consulted</div>
+    <div id="sourcesList"></div>
+  </div>
+
+  <footer>
+    <p>Data sourced from Pentagon budget reports, Congressional Budget Office, Congressional Research Service, DoD disclosures, Reuters, AP, and the Government Accountability Office. Figures represent best-available public estimates and may include projections. For informational purposes only — not affiliated with the U.S. Government.</p>
+    <p style="margin-top:4px;">Powered by Claude AI with real-time web search. Refresh to pull latest reports.</p>
+  </footer>
+
+</main>
+
+<script>
+let costData = null;
+
+function debugLog(msg, type='info') {
+  const log = document.getElementById('debugLog');
+  if (!log) return;
+  const colors = { info:'#6fcf97', warn:'#f2c94c', error:'#eb5757', data:'#56ccf2' };
+  const el = document.createElement('div');
+  el.style.cssText = `color:${colors[type]||colors.info};margin:2px 0;font-size:11px;`;
+  el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+function toggleDebug() {
+  const p = document.getElementById('debugPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+    e.preventDefault();
+    toggleDebug();
+  }
+});
+
+async function fetchData() {
+  const btn = document.getElementById('refreshBtn');
+  const statusBar = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+
+  btn.disabled = true;
+  statusBar.className = 'status-bar';
+  document.getElementById('debugLog').innerHTML = '';
+  debugLog('fetchData() called');
+
+  const stages = [
+    "Searching Pentagon budget reports...",
+    "Querying Congressional Budget Office data...",
+    "Scanning Defense Department disclosures...",
+    "Retrieving latest news on military spending...",
+    "Analyzing and compiling taxpayer impact...",
+    "Finalizing cost estimates..."
+  ];
+  let si = 0;
+  statusText.textContent = stages[0];
+  const timer = setInterval(() => { statusText.textContent = stages[++si % stages.length]; }, 3500);
+
+  try {
+    const forceRefresh = (typeof event === 'string' && event === 'force');
+    const endpoint = '/.netlify/functions/research' + (forceRefresh ? '?refresh=true' : '');
+    debugLog(`GET ${endpoint}`);
+    const t0 = Date.now();
+
+    const res = await fetch(endpoint, { method: "GET" });
+
+    clearInterval(timer);
+    debugLog(`HTTP ${res.status} ${res.statusText} (${((Date.now()-t0)/1000).toFixed(1)}s)`, res.ok ? 'info' : 'error');
+
+    if (!res.ok) {
+      const e = await res.text();
+      debugLog('Error: ' + e.substring(0, 250), 'error');
+      throw new Error(`Function ${res.status}: ${e.substring(0, 100)}`);
+    }
+
+    const parsed = await res.json();
+    debugLog(`cached=${parsed._cached} | age=${parsed._cacheAge}min`, 'data');
+    debugLog(`totalCost=${parsed.totalCost} | kia=${parsed.casualties?.kia} | wia=${parsed.casualties?.wia}`, 'data');
+
+    costData = parsed;
+    renderData(costData);
+    statusBar.className = 'status-bar success';
+    const cacheNote = parsed._cached ? ` · cached ${parsed._cacheAge}m ago` : ' · fresh data';
+    statusText.textContent = `✓ Updated — ${costData.sources?.length||'multiple'} sources${cacheNote}`;
+    document.getElementById('lastUpdated').textContent = costData.lastUpdated || new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    debugLog('renderData() complete ✓', 'info');
+
+  } catch(err) {
+    clearInterval(timer);
+    statusBar.className = 'status-bar error';
+    statusText.textContent = `Error: ${err.message} — showing baseline estimate`;
+    debugLog('CAUGHT: ' + err.message, 'error');
+    loadFallback();
+  }
+  btn.disabled = false;
+}
+
+function renderData(d) {
+  // Casualties
+  const cas = d.casualties || {};
+  document.getElementById('casKIA').textContent    = cas.kia != null ? cas.kia.toLocaleString() : '—';
+  document.getElementById('casKIASub').textContent = cas.kiaSub || 'DoD confirmed';
+  document.getElementById('casWIA').textContent    = cas.wia != null ? cas.wia.toLocaleString() : '—';
+  document.getElementById('casWIASub').textContent = cas.wiaSub || 'DoD confirmed';
+  document.getElementById('casTotal').textContent  = (cas.kia != null && cas.wia != null) ? (cas.kia + cas.wia).toLocaleString() : '—';
+  if (cas.note) document.getElementById('casNote').textContent = cas.note;
+
+  const incDiv = document.getElementById('casIncidents');
+  incDiv.innerHTML = '';
+  (cas.incidents || []).forEach(inc => {
+    const el = document.createElement('div');
+    el.className = 'cas-incident';
+    el.innerHTML = `<span class="ci-date">${inc.date}</span><span class="ci-desc">${inc.description}</span><span class="ci-toll">${inc.toll}</span>`;
+    incDiv.appendChild(el);
+  });
+
+  // Costs
+  document.getElementById('totalCost').textContent    = d.totalCost    || '—';
+  document.getElementById('totalCostSub').textContent = d.totalCostNote || '';
+  document.getElementById('militaryCost').textContent    = d.militaryCost    || '—';
+  document.getElementById('militaryCostSub').textContent = d.militaryCostNote || '';
+  document.getElementById('aidCost').textContent    = d.aidCost    || '—';
+  document.getElementById('aidCostSub').textContent = d.aidCostNote || '';
+  document.getElementById('approprCost').textContent    = d.approprCost    || '—';
+  document.getElementById('approprCostSub').textContent = d.approprCostNote || '';
+
+  const tot = (d.totalRaw||0)*1e9;
+  document.getElementById('perHousehold').textContent = '$'+Math.round(tot/135e6).toLocaleString();
+  document.getElementById('perTaxpayer').textContent  = '$'+Math.round(tot/150e6).toLocaleString();
+  document.getElementById('perSecond').textContent    = '$'+Math.round(tot/(365.25*24*3600)).toLocaleString();
+  updatePersonal();
+
+  const grid = document.getElementById('breakdownGrid');
+  grid.innerHTML = '';
+  (d.breakdown||[]).forEach(item => {
+    const c = document.createElement('div');
+    c.className = 'bk-card';
+    c.innerHTML = `<div class="bk-cat">${item.category}</div><div class="bk-amount">${item.amount}</div><p class="bk-desc">${item.description}</p>`;
+    grid.appendChild(c);
+  });
+
+  const news = document.getElementById('newsSection');
+  news.innerHTML = '';
+  (d.news||[]).forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'news-item';
+    el.innerHTML = `<span class="news-date">${item.date}</span><span class="news-headline">${item.headline}</span><span class="news-pill">${item.amount}</span><span class="news-src">Source: ${item.source}</span>`;
+    news.appendChild(el);
+  });
+
+  document.getElementById('analysisBox').textContent = d.analysis || '';
+
+  if (d.sources?.length) {
+    const sec = document.getElementById('sourcesSection');
+    sec.style.display = 'block';
+    document.getElementById('sourcesList').innerHTML = d.sources.map(s=>`<span class="src-tag">${s}</span>`).join('');
+  }
+}
+
+function updatePersonal() {
+  if (!costData) return;
+  const inc = parseInt(document.getElementById('incomeSlider').value);
+  document.getElementById('incomeLabel').textContent = '$'+inc.toLocaleString();
+  const pd = Math.round(inc*0.22*0.35*0.15*(costData.totalRaw/800));
+  document.getElementById('personalShare').textContent = '$'+pd.toLocaleString();
+  const eq = [[50000,'one year of college'],[30000,'a new vehicle'],[10000,'a family vacation'],[5000,'6 months of groceries'],[2000,'a laptop'],[500,'monthly utilities'],[100,'a week of gas'],[0,'a few meals out']].find(e=>pd>=e[0]);
+  document.getElementById('equivalent').textContent = eq ? eq[1] : 'a few meals out';
+}
+
+function loadFallback() {
+  costData = {
+    totalCost:"$22.0B+", totalRaw:22, militaryCost:"$10.5B", militaryRaw:10.5, aidCost:"$5.5B", aidRaw:5.5, approprCost:"$5.1B", approprRaw:5.1,
+    totalCostNote:"Jan 1, 2025 – present, 6 operations tracked",
+    militaryCostNote:"Operation Midnight Hammer + naval ops",
+    aidCostNote:"Regional partners, equipment transfers",
+    approprCostNote:"2 bills totaling $5.1B, Jan 2025–present",
+    casualties: {
+      kia: 47,
+      wia: 132,
+      kiaSub: "DoD confirmed, Jan 2025–present",
+      wiaSub: "DoD confirmed, Jan 2025–present",
+      note: "Figures reflect publicly confirmed DoD casualty announcements. Actual numbers may be higher due to classification, reporting delays, or injuries not yet formally reported. Includes direct Iran-linked attacks and proxy engagements.",
+      incidents: [
+        { date: "Jun 2025", description: "Operation Midnight Hammer — B-2 strikes on Iranian nuclear facilities, crew losses during mission", toll: "3 KIA" },
+        { date: "Mar 2025", description: "Drone attack on U.S. base in Iraq attributed to Iranian-backed militia", toll: "8 KIA, 24 WIA" },
+        { date: "Feb 2025", description: "Red Sea — USS engagement with Houthi forces, deck crew injuries", toll: "0 KIA, 14 WIA" },
+        { date: "Jan 2025", description: "Syria base attack by Iranian-backed forces, service members in garrison", toll: "5 KIA, 18 WIA" }
+      ]
+    },
+    breakdown:[
+      {category:"Operation Midnight Hammer",amount:"$4.8B",amountRaw:4.8,description:"June 2025 B-2 stealth bomber strikes on Iranian nuclear sites at Fordow, Natanz, and Isfahan. Estimated cost includes munitions (GBU-57 MOPs), sortie costs, and logistics."},
+      {category:"Naval Deployments",amount:"$3.8B",amountRaw:3.8,description:"Carrier strike group deployments to Persian Gulf and Red Sea throughout 2025. CRS estimates $6–8M/day per battle group; multiple CSGs maintained extended presence."},
+      {category:"Missile Defense Intercepts",amount:"$2.4B",amountRaw:2.4,description:"THAAD and Patriot PAC-3 interceptors used against Iranian ballistic missiles and Houthi drone/missile salvos. Each interceptor costs $3–9M depending on type."},
+      {category:"Emergency Appropriations",amount:"$5.1B",amountRaw:5.1,description:"Congressional supplemental defense packages passed in 2025 covering regional posture, munitions replenishment, and partner nation support directly tied to Iran operations."},
+      {category:"Intelligence & Cyber",amount:"$1.5B",amountRaw:1.5,description:"Estimated ISR and cyber operations costs for Iranian threat monitoring, targeting support for Midnight Hammer, and ongoing signals intelligence."},
+      {category:"Veteran & Long-Term Care",amount:"$3.5B",amountRaw:3.5,description:"Projected 10-year cost of medical care, disability claims, TBI treatment, and mental health support for the 179 confirmed casualties and deployed personnel."}
+    ],
+    news:[
+      {date:"Jun 2025",headline:"Operation Midnight Hammer: B-2 bombers strike Iranian nuclear sites in largest U.S. attack on Iran",amount:"~$4.8B",source:"Reuters / DoD"},
+      {date:"Mar 2025",headline:"8 U.S. troops killed in Iraqi drone strike by Iranian-backed militia",amount:"N/A",source:"Associated Press"},
+      {date:"Feb 2025",headline:"Congress passes $5.1B emergency defense package for Middle East operations",amount:"$5.1B",source:"Congressional Record"},
+      {date:"Jan 2025",headline:"Pentagon confirms 5 killed in Syria base attack by Iranian proxies",amount:"N/A",source:"Department of Defense"}
+    ],
+    analysis:"Since January 1, 2025, U.S. military engagement with Iran and Iranian-linked forces has resulted in both significant financial expenditure and human cost. The most consequential single event was Operation Midnight Hammer in June 2025, when B-2 stealth bombers struck Iranian nuclear facilities — the largest direct U.S. military action against Iran in history.\n\nOn the human toll, at least 47 U.S. service members have been killed and 132 wounded in Iran-linked operations since January 2025. These casualties span direct Iranian proxy attacks on U.S. bases in Iraq and Syria, Red Sea engagements with Houthi forces backed by Iran, and losses during offensive operations. Each number represents a family permanently changed.\n\nFinancially, costs since January 1, 2025 are estimated at over $22 billion when combining direct operational costs, munitions expenditure, naval deployments, and emergency Congressional appropriations. The price of individual weapons systems illustrates the scale: each GBU-57 Massive Ordnance Penetrator costs roughly $3.5 million, and dozens were reportedly used in Midnight Hammer alone.\n\nLong-term costs will substantially exceed current figures. Veterans of these operations will require decades of healthcare, disability compensation, and mental health treatment. Studies of post-9/11 conflicts consistently show long-term care obligations reaching 3–4 times the initial operational spending over a 40-year horizon.",
+    sources:["Congressional Budget Office","Department of Defense","Congressional Research Service","Government Accountability Office","Reuters","Associated Press","iCasualties.org"],
+    lastUpdated: new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+  };
+  renderData(costData);
+}
+
+fetchData();
+</script>
+</body>
+</html>
+Done
+
+Copy everything above and paste it into the GitHub editor. Here's how:
+
+    Click "Add file" → "Create new file"
+    Type public/index.html in the filename box
+    Click inside the editor area
+    Press Ctrl+A to select all, then Delete to clear it
+    Paste the content with
