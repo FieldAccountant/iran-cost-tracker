@@ -6,6 +6,7 @@
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // In-memory cache (persists between requests on the same function instance)
+// For a more persistent cache across cold starts, upgrade to Netlify KV
 let cache = {
   data: null,
   timestamp: null
@@ -16,16 +17,19 @@ const SYSTEM_PROMPT = `Nonpartisan defense analyst. Research U.S. military costs
 
 exports.handler = async (event) => {
 
+  // CORS headers — allow your Netlify frontend to call this function
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json"
   };
 
+  // Handle preflight OPTIONS request
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
   }
 
+  // Only allow GET and POST
   if (event.httpMethod !== "GET" && event.httpMethod !== "POST") {
     return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
   }
@@ -33,6 +37,7 @@ exports.handler = async (event) => {
   const forceRefresh = event.queryStringParameters?.refresh === "true";
   const now = Date.now();
 
+  // Check cache — return immediately if fresh and not forced refresh
   if (!forceRefresh && cache.data && cache.timestamp && (now - cache.timestamp) < CACHE_DURATION_MS) {
     const ageMinutes = Math.round((now - cache.timestamp) / 60000);
     console.log(`Cache hit — age: ${ageMinutes} minutes`);
@@ -48,6 +53,7 @@ exports.handler = async (event) => {
     };
   }
 
+  // Cache miss or forced refresh — call Anthropic API
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.error("ANTHROPIC_API_KEY environment variable not set");
@@ -88,11 +94,13 @@ exports.handler = async (event) => {
 
     const data = await response.json();
 
+    // Extract text from response blocks
     const rawText = data.content
       .filter(b => b.type === "text")
       .map(b => b.text)
       .join("\n");
 
+    // Strip any markdown fences and parse JSON
     const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
 
@@ -100,8 +108,18 @@ exports.handler = async (event) => {
       throw new Error("No JSON found in Anthropic response");
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    // Robust JSON cleaner — fixes common AI formatting issues
+    let jsonStr = jsonMatch[0];
+    // Remove trailing commas before ] or }
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+    // Remove any control characters
+    jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, ' ');
+    // Fix common escape issues
+    jsonStr = jsonStr.replace(/\\'/g, "'");
 
+    const parsed = JSON.parse(jsonStr);
+
+    // Save to cache
     cache.data = parsed;
     cache.timestamp = now;
     console.log("Fresh data cached successfully");
@@ -120,6 +138,7 @@ exports.handler = async (event) => {
   } catch (err) {
     console.error("Function error:", err.message);
 
+    // If we have stale cache, return it rather than failing completely
     if (cache.data) {
       const ageMinutes = Math.round((now - cache.timestamp) / 60000);
       console.log(`Returning stale cache (${ageMinutes}min old) due to error`);
