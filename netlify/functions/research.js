@@ -6,7 +6,6 @@
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // In-memory cache (persists between requests on the same function instance)
-// For a more persistent cache across cold starts, upgrade to Netlify KV
 let cache = {
   data: null,
   timestamp: null
@@ -17,19 +16,16 @@ const SYSTEM_PROMPT = `Nonpartisan defense analyst. Research U.S. military costs
 
 exports.handler = async (event) => {
 
-  // CORS headers — allow your Netlify frontend to call this function
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json"
   };
 
-  // Handle preflight OPTIONS request
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "" };
   }
 
-  // Only allow GET and POST
   if (event.httpMethod !== "GET" && event.httpMethod !== "POST") {
     return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
   }
@@ -37,7 +33,6 @@ exports.handler = async (event) => {
   const forceRefresh = event.queryStringParameters?.refresh === "true";
   const now = Date.now();
 
-  // Check cache — return immediately if fresh and not forced refresh
   if (!forceRefresh && cache.data && cache.timestamp && (now - cache.timestamp) < CACHE_DURATION_MS) {
     const ageMinutes = Math.round((now - cache.timestamp) / 60000);
     console.log(`Cache hit — age: ${ageMinutes} minutes`);
@@ -53,7 +48,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // Cache miss or forced refresh — call Anthropic API
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.error("ANTHROPIC_API_KEY environment variable not set");
@@ -75,13 +69,13 @@ exports.handler = async (event) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 2000,
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 3000,
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         system: SYSTEM_PROMPT,
         messages: [{
           role: "user",
-          content: "Search for U.S. military costs and service member casualties (KIA/WIA) from Iran-linked operations Jan 1 2025 to today. Include Operation Midnight Hammer, carrier deployments, Congressional appropriations, missile defense intercepts, and confirmed U.S. casualties. Return JSON only."
+          content: "Search for U.S. military costs AND confirmed casualties (KIA/WIA) from Iran-linked operations Jan 1 2025 to today. Specifically search: 1) Operation Midnight Hammer costs, 2) Operation Epic Fury costs, 3) carrier deployment costs, 4) Congressional appropriations, 5) US troops killed or wounded in Iran-linked attacks in 2025 including drone attacks on bases in Iraq/Syria, Red Sea engagements, and any direct Iran conflict. Search DoD casualty announcements and news reports. Return JSON only."
         }]
       })
     });
@@ -94,13 +88,11 @@ exports.handler = async (event) => {
 
     const data = await response.json();
 
-    // Extract text from response blocks
     const rawText = data.content
       .filter(b => b.type === "text")
       .map(b => b.text)
       .join("\n");
 
-    // Strip any markdown fences and parse JSON
     const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
 
@@ -108,22 +100,16 @@ exports.handler = async (event) => {
       throw new Error("No JSON found in Anthropic response");
     }
 
-    // Aggressive JSON repair — fixes common AI formatting issues
     let jsonStr = jsonMatch[0];
-    // Remove trailing commas before ] or }
     jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
-    // Remove control characters except newlines/tabs
     jsonStr = jsonStr.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-    // Fix unescaped newlines inside strings
     jsonStr = jsonStr.replace(/("(?:[^"\\]|\\.)*")|(\n)/g, (match, str, nl) => str ? str : '\\n');
-    // Fix unescaped quotes inside strings (basic)
     jsonStr = jsonStr.replace(/\\'/g, "'");
 
     let parsed;
     try {
       parsed = JSON.parse(jsonStr);
     } catch(e) {
-      // Last resort — try to extract just the fields we need
       console.error("JSON parse failed, attempting field extraction:", e.message);
       const extract = (key) => {
         const m = jsonStr.match(new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`) ) || jsonStr.match(new RegExp(`"${key}"\\s*:\\s*([\\d.]+)`));
@@ -148,7 +134,6 @@ exports.handler = async (event) => {
       };
     }
 
-    // Save to cache
     cache.data = parsed;
     cache.timestamp = now;
     console.log("Fresh data cached successfully");
@@ -167,7 +152,6 @@ exports.handler = async (event) => {
   } catch (err) {
     console.error("Function error:", err.message);
 
-    // If we have stale cache, return it rather than failing completely
     if (cache.data) {
       const ageMinutes = Math.round((now - cache.timestamp) / 60000);
       console.log(`Returning stale cache (${ageMinutes}min old) due to error`);
