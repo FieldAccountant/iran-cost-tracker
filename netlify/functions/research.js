@@ -108,16 +108,45 @@ exports.handler = async (event) => {
       throw new Error("No JSON found in Anthropic response");
     }
 
-    // Robust JSON cleaner — fixes common AI formatting issues
+    // Aggressive JSON repair — fixes common AI formatting issues
     let jsonStr = jsonMatch[0];
     // Remove trailing commas before ] or }
     jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
-    // Remove any control characters
-    jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, ' ');
-    // Fix common escape issues
+    // Remove control characters except newlines/tabs
+    jsonStr = jsonStr.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    // Fix unescaped newlines inside strings
+    jsonStr = jsonStr.replace(/("(?:[^"\\]|\\.)*")|(\n)/g, (match, str, nl) => str ? str : '\\n');
+    // Fix unescaped quotes inside strings (basic)
     jsonStr = jsonStr.replace(/\\'/g, "'");
 
-    const parsed = JSON.parse(jsonStr);
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch(e) {
+      // Last resort — try to extract just the fields we need
+      console.error("JSON parse failed, attempting field extraction:", e.message);
+      const extract = (key) => {
+        const m = jsonStr.match(new RegExp(`"${key}"\\s*:\\s*"([^"]*)"`) ) || jsonStr.match(new RegExp(`"${key}"\\s*:\\s*([\\d.]+)`));
+        return m ? m[1] : null;
+      };
+      parsed = {
+        totalCost: extract('totalCost') || '—',
+        totalRaw: parseFloat(extract('totalRaw')) || 0,
+        militaryCost: extract('militaryCost') || '—',
+        militaryRaw: parseFloat(extract('militaryRaw')) || 0,
+        aidCost: extract('aidCost') || '—',
+        aidRaw: parseFloat(extract('aidRaw')) || 0,
+        approprCost: extract('approprCost') || '—',
+        approprRaw: parseFloat(extract('approprRaw')) || 0,
+        totalCostNote: extract('totalCostNote') || '',
+        casualties: { kia: 0, wia: 0, incidents: [] },
+        breakdown: [],
+        news: [],
+        analysis: "Data was retrieved but could not be fully parsed. Please refresh to try again.",
+        sources: [],
+        lastUpdated: new Date().toLocaleDateString()
+      };
+    }
 
     // Save to cache
     cache.data = parsed;
